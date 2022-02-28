@@ -1,47 +1,68 @@
-const xValue = d => d.Horsepower;
-const yValue = d => d.Displacement;
-const margin = { left: 30, right: 20, top: 20, bottom: 20 };
+// http://bl.ocks.org/alansmithy/e984477a741bc56db5a5
 
 const svg = d3.select('svg');
-const width = svg.attr('width');
-const height = svg.attr('height');
-const innerWidth = width - margin.left - margin.right;
-const innerHeight = height - margin.top - margin.bottom;
+//2 different data arrays
+var dataArray1 = [30,35,45,55,70];
+var dataArray2 = [50,55,45,35,20,25,25,40];
 
-const g = svg.append('g')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-const xAxisG = g.append('g')
-    .attr('transform', `translate(0, ${innerHeight})`);
-const yAxisG = g.append('g');
+//globals
+var dataIndex=1;
+var xBuffer=50;
+var yBuffer=150;
+var lineLength=400;
 
-const xScale = d3.scaleLinear();
-const yScale = d3.scaleLinear();
 
-const xAxis = d3.axisBottom().scale(xScale);
-const yAxis = d3.axisLeft().scale(yScale);
+svg.append("text")
+    .attr("x",xBuffer+(lineLength/2))
+    .attr("y",50)
+    .text("dataset"+dataIndex);
 
-const row = d => {
-  d.Horsepower = +d.Horsepower;
-  d.Displacement = +d.Displacement;
-  return d;
-};
+//create axis line
+svg.append("line")
+    .attr("x1",xBuffer)
+    .attr("y1",yBuffer)
+    .attr("x1",xBuffer+lineLength)
+    .attr("y2",yBuffer)
 
-d3.csv('cars.csv', row)
-  .then(data => {
-    xScale
-      .domain(d3.extent(data, xValue))
-      .range([0, innerWidth]);
+//create basic circles
+svg.append("g").selectAll("circle")
+    .data(eval("dataArray"+dataIndex))
+    .enter()
+    .append("circle")
+    .attr("cx",function(d,i){
+        var spacing = lineLength/(eval("dataArray"+dataIndex).length);
+        return xBuffer+(i*spacing)
+    })
+    .attr("cy",yBuffer)
+    .attr("r",function(d,i){return d});
 
-    yScale
-      .domain(d3.extent(data, yValue))
-      .range([innerHeight, 0]);
+//button to swap over datasets
+d3.select("body").append("button")
+    .text("change data")
+    .on("click",function(){
+        //select new data
+        if (dataIndex==1) {
+            dataIndex=2;
+        } else   {
+            dataIndex=1;
+        }
+        //rejoin data
+        var circle = svg.select("g").selectAll("circle")
+            .data(eval("dataArray"+dataIndex));
 
-    g.selectAll('circle').data(data)
-      .enter().append('circle')
-      .attr('cx', d => xScale(xValue(d)))
-      .attr('cy', d => yScale(yValue(d)))
-      .attr('r', 5);
+        circle.exit().remove();//remove unneeded circles
+        circle.enter().append("circle")
+            .attr("r",0);//create any new circles needed
 
-    xAxisG.call(xAxis);
-    yAxisG.call(yAxis);
-  });
+        //update all circles to new positions
+        circle.transition()
+            .duration(500)
+            .attr("cx",function(d,i){
+                var spacing = lineLength/(eval("dataArray"+dataIndex).length);
+                return xBuffer+(i*spacing)
+            })
+            .attr("cy",yBuffer)
+            .attr("r",function(d,i){return d});
+
+        d3.select("text").text("dataset"+dataIndex);
+    });

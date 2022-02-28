@@ -1,47 +1,54 @@
-const xValue = d => d.Horsepower;
-const yValue = d => d.Displacement;
-const margin = { left: 30, right: 20, top: 20, bottom: 20 };
+// https://www.d3indepth.com/scales/#scales-with-continuous-input-and-discrete-output
+var cs_black = function(d){return 'black'};
+var draw = function(myScale, myColorScale=cs_black){
+  d3.select('svg')
+  	.selectAll('circle')
+  	.data(data)
+  	.join('circle')
+  	.attr('r', 10)
+    .attr('cy', 50)
+  	.attr('cx', function(d) {
+  		return 20 + myScale(d);
+  	})
+    .attr('fill', function(d){
+      return myColorScale(d);
+    });
 
-const svg = d3.select('svg');
-const width = svg.attr('width');
-const height = svg.attr('height');
-const innerWidth = width - margin.left - margin.right;
-const innerHeight = height - margin.top - margin.bottom;
+  d3.select('svg')
+  	.selectAll('text')
+  	.data(data)
+  	.join('text')
+  	.attr('x', function(d) {
+  		return 20 + myScale(d);
+  	})
+  	.attr('y', 50-15)
+  	.text(function(d) {
+  		return d;
+  	});
+}
 
-const g = svg.append('g')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-const xAxisG = g.append('g')
-    .attr('transform', `translate(0, ${innerHeight})`);
-const yAxisG = g.append('g');
 
-const xScale = d3.scaleLinear();
-const yScale = d3.scaleLinear();
+var s_linear = d3.scaleLinear()
+    .domain([0, 10]) // Domain of your data that want to scale
+    .range([0, 600]); // Range of the output that will map inputs to this scale
+var s_pow = d3.scalePow()
+    .exponent(2)
+    .domain([0, 10])
+    .range([0, 600]);
+var s_quantize = d3.scaleQuantize()
+    .domain([0, 10])
+    .range([0, 300, 600]);
 
-const xAxis = d3.axisBottom().scale(xScale);
-const yAxis = d3.axisLeft().scale(yScale);
 
-const row = d => {
-  d.Horsepower = +d.Horsepower;
-  d.Displacement = +d.Displacement;
-  return d;
-};
+let cs_sequential = d3.scaleSequential()
+  .domain([0, 10])
+  .interpolator(d3.interpolateRainbow);
+let cs_threshold = d3.scaleThreshold()
+  .domain([1, 5, 7.5, 10])
+  .range(['black', 'blue', 'red', 'blue', 'black']);
 
-d3.csv('cars.csv', row)
-  .then(data => {
-    xScale
-      .domain(d3.extent(data, xValue))
-      .range([0, innerWidth]);
 
-    yScale
-      .domain(d3.extent(data, yValue))
-      .range([innerHeight, 0]);
+var data = [ 0, 1, 2, 3, 4, 5, 7.5, 10];
 
-    g.selectAll('circle').data(data)
-      .enter().append('circle')
-      .attr('cx', d => xScale(xValue(d)))
-      .attr('cy', d => yScale(yValue(d)))
-      .attr('r', 5);
-
-    xAxisG.call(xAxis);
-    yAxisG.call(yAxis);
-  });
+draw(s_linear);
+// draw(s_pow, cs_sequential)

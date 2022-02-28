@@ -1,6 +1,6 @@
 var svg = d3.select('svg');
 var shapes = svg.append('g')
-    .attr('class', '');
+    .attr('class', 'shapes');
 
 var height = 200;
 var x_pos_gap = 150;
@@ -33,9 +33,18 @@ shapes.append('line')
     .attr('stroke-width', 3)
     .style('stroke', '#111');
 
-i = i + 1
+i = i + 1;
 
 var star = d3.symbol().type(d3.symbolStar).size(5000);
 shapes.append('path')
     .attr('d', star)
     .attr('transform', 'translate(' + i*x_pos_gap + ',' + height + ')');
+
+i = i + 1;
+
+shapes.append('ellipse')
+    .attr('cx', i*x_pos_gap)
+    .attr('cy', height)
+    .attr('rx', 25)
+    .attr('ry', 50)
+    .style('fill', '#111');

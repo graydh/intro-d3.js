@@ -1,47 +1,41 @@
-const xValue = d => d.Horsepower;
-const yValue = d => d.Displacement;
-const margin = { left: 30, right: 20, top: 20, bottom: 20 };
+var svg = d3.select('svg');
+var shapes = svg.append('g')
+    .attr('class', '');
 
-const svg = d3.select('svg');
-const width = svg.attr('width');
-const height = svg.attr('height');
-const innerWidth = width - margin.left - margin.right;
-const innerHeight = height - margin.top - margin.bottom;
+var height = 200;
+var x_pos_gap = 150;
 
-const g = svg.append('g')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-const xAxisG = g.append('g')
-    .attr('transform', `translate(0, ${innerHeight})`);
-const yAxisG = g.append('g');
+var i = 1;
 
-const xScale = d3.scaleLinear();
-const yScale = d3.scaleLinear();
+shapes.append('rect')
+    .attr('x', i*x_pos_gap)
+    .attr('y', height)
+    .attr('width', 50)
+    .attr('height', 200)
+    .style('fill', '#111');
 
-const xAxis = d3.axisBottom().scale(xScale);
-const yAxis = d3.axisLeft().scale(yScale);
+i = i + 1;
 
-const row = d => {
-  d.Horsepower = +d.Horsepower;
-  d.Displacement = +d.Displacement;
-  return d;
-};
+shapes.append('circle')
+    .attr('cx', i*x_pos_gap)
+    .attr('cy', height)
+    .attr('r', 50)
+    .style('fill', '#111');
 
-d3.csv('cars.csv', row)
-  .then(data => {
-    xScale
-      .domain(d3.extent(data, xValue))
-      .range([0, innerWidth]);
+i = i + 1;
 
-    yScale
-      .domain(d3.extent(data, yValue))
-      .range([innerHeight, 0]);
+length = 100;
+shapes.append('line')
+    .attr('x1', i*x_pos_gap)
+    .attr('y1', height)
+    .attr('x2', i*x_pos_gap)
+    .attr('y2', height+length)
+    .attr('stroke-width', 3)
+    .style('stroke', '#111');
 
-    g.selectAll('circle').data(data)
-      .enter().append('circle')
-      .attr('cx', d => xScale(xValue(d)))
-      .attr('cy', d => yScale(yValue(d)))
-      .attr('r', 5);
+i = i + 1
 
-    xAxisG.call(xAxis);
-    yAxisG.call(yAxis);
-  });
+var star = d3.symbol().type(d3.symbolStar).size(5000);
+shapes.append('path')
+    .attr('d', star)
+    .attr('transform', 'translate(' + i*x_pos_gap + ',' + height + ')');

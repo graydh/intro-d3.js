@@ -8,7 +8,6 @@ var pops = d3.json("pops.json").then(
     for (var i = 0, emp; i < data.length; i++) {
        emp = data[i];
        country_data[ emp.ccn3 ] = emp;
-       console.log(emp.Density)
     }
 
     var color = d3.scaleSequential(d3.interpolate("white", "red"))
@@ -30,7 +29,6 @@ var pops = d3.json("pops.json").then(
   
   // load and display the World
   d3.json("world-110m2.json").then(function(topology) {
-  
       g.selectAll("path")
          .data(topojson.feature(topology, topology.objects.countries).features)
          .enter().append("path")

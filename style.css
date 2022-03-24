@@ -1,3 +1,6 @@
 body {
   margin: 0px
 }
+rect:hover {
+  fill: orange;
+}

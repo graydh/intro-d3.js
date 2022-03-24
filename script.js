@@ -1,68 +1,96 @@
-// http://bl.ocks.org/alansmithy/e984477a741bc56db5a5
+//Width and height
+var w = 600;
+var h = 250;
 
-const svg = d3.select('svg');
-//2 different data arrays
-var dataArray1 = [30,35,45,55,70];
-var dataArray2 = [50,55,45,35,20,25,25,40];
+var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+        11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
 
-//globals
-var dataIndex=1;
-var xBuffer=50;
-var yBuffer=150;
-var lineLength=400;
+var xScale = d3.scaleBand()
+        .domain(d3.range(dataset.length))
+        .rangeRound([0, w])
+        .paddingInner(0.05);
 
+var yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset)])
+        .range([0, h]);
 
-svg.append("text")
-    .attr("x",xBuffer+(lineLength/2))
-    .attr("y",50)
-    .text("dataset"+dataIndex);
+//Create SVG element
+var svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h);
 
-//create axis line
-svg.append("line")
-    .attr("x1",xBuffer)
-    .attr("y1",yBuffer)
-    .attr("x1",xBuffer+lineLength)
-    .attr("y2",yBuffer)
+//Create bars
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   .attr("x", function(d, i) {
+      return xScale(i);
+   })
+   .attr("y", function(d) {
+      return h - yScale(d);
+   })
+   .attr("width", xScale.bandwidth())
+   .attr("height", function(d) {
+      return yScale(d);
+   })
+   .attr("fill", function(d) {
+    return "rgb(0, 0, " + Math.round(d * 10) + ")";
+   })
+   .on("mouseover", function(event, d) {
 
-//create basic circles
-svg.append("g").selectAll("circle")
-    .data(eval("dataArray"+dataIndex))
-    .enter()
-    .append("circle")
-    .attr("cx",function(d,i){
-        var spacing = lineLength/(eval("dataArray"+dataIndex).length);
-        return xBuffer+(i*spacing)
-    })
-    .attr("cy",yBuffer)
-    .attr("r",function(d,i){return d});
+    //Get this bar's x/y values, then augment for the tooltip
+    var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.bandwidth() / 2;
+    var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
 
-//button to swap over datasets
-d3.select("body").append("button")
-    .text("change data")
-    .on("click",function(){
-        //select new data
-        if (dataIndex==1) {
-            dataIndex=2;
-        } else   {
-            dataIndex=1;
+    //Create the tooltip label
+    svg.append("text")
+       .attr("id", "tooltip")
+       .attr("x", xPosition)
+       .attr("y", yPosition)
+       .attr("text-anchor", "middle")
+       .attr("font-family", "sans-serif")
+       .attr("font-size", "11px")
+       .attr("font-weight", "bold")
+       .attr("fill", "whit")
+       .text(d);
+
+   })
+   .on("mouseout", function() {
+   
+    //Remove the tooltip
+    d3.select("#tooltip").remove();
+    
+   })
+   .on("click", function() {
+      sortBars();
+   });
+
+//Define sort order flag
+var sortOrder = false;
+
+//Define sort function
+var sortBars = function() {
+
+  //Flip value of sortOrder
+    sortOrder = !sortOrder;
+
+  svg.selectAll("rect")
+     .sort(function(a, b) {
+        if (sortOrder) {
+          return d3.ascending(a, b);
+        } else {
+          return d3.descending(a, b);
         }
-        //rejoin data
-        var circle = svg.select("g").selectAll("circle")
-            .data(eval("dataArray"+dataIndex));
+      })
+     .transition()
+     .delay(function(d, i) {
+       return i * 50;
+     })
+     .duration(1000)
+     .attr("x", function(d, i) {
+        return xScale(i);
+     });
 
-        circle.exit().remove();//remove unneeded circles
-        circle.enter().append("circle")
-            .attr("r",0);//create any new circles needed
-
-        //update all circles to new positions
-        circle.transition()
-            .duration(500)
-            .attr("cx",function(d,i){
-                var spacing = lineLength/(eval("dataArray"+dataIndex).length);
-                return xBuffer+(i*spacing)
-            })
-            .attr("cy",yBuffer)
-            .attr("r",function(d,i){return d});
-
-        d3.select("text").text("dataset"+dataIndex);
-    });
+};	
